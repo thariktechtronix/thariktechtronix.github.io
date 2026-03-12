@@ -1,24 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tharik Techtronix | Desk Buddy Episode 2</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Fira+Code&display=swap" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
-<html>
-  <body>
-<h1>ESP32 Desk Robot</h1>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --accent-color: #ff5722; /* Techtronix Orange */
+            --text-color: #e0e0e0;
+        }
 
-<h2>Circuit Diagram</h2>
-<img src="images/robot_circuit.png" width="500">
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; line-height: 1.6; }
+        header { background-color: var(--container-bg); border-bottom: 3px solid var(--accent-color); text-align: center; padding: 2rem 1rem; }
+        header h1 { margin: 0; color: #ffffff; font-size: 2.5rem; letter-spacing: 1px; }
+        header p { color: var(--accent-color); font-weight: bold; margin-top: 5px; }
+        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        .section { background-color: var(--container-bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h2 { border-bottom: 2px solid var(--accent-color); padding-bottom: 0.5rem; margin-top: 0; color: #ffffff; }
+        
+        /* YouTube Shorts Styling */
+        .video-container { display: flex; justify-content: center; margin: 1.5rem 0; }
+        iframe { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 
-<h2>Watch the Project</h2>
-<iframe
-width="315"
-height="560"
-src="https://www.youtube.com/embed/d0q5ObDtU6o"
-frameborder="0"
-allowfullscreen>
-</iframe>
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        th { background-color: #2a2a2a; color: var(--accent-color); }
 
-<h2>Download Files</h2>
+        /* Read-Only Code Editor Styling */
+        .code-header { display: flex; justify-content: space-between; align-items: center; background-color: #2d2d2d; padding: 10px 15px; border-radius: 8px 8px 0 0; border-bottom: 1px solid #111; }
+        .code-header span { font-family: 'Fira Code', monospace; font-size: 0.9rem; color: #888; }
+        .copy-btn { background-color: var(--accent-color); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .copy-btn:hover { background-color: #e64a19; }
+        pre { margin: 0 !important; border-radius: 0 0 8px 8px !important; max-height: 600px; overflow-y: auto; }
+        code { font-family: 'Fira Code', monospace !important; font-size: 14px; }
+    </style>
+</head>
+<body>
 
-<a href="pdf/robot_guide.pdf" download>Download PDF Guide</a>
-<br>
-<a href="code/robot_code.zip" download>Download Code</a>
+    <header>
+        <h1>Tharik Techtronix</h1>
+        <p>Keep Making, Keep Coding</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="section">
+            <h2>Desk Buddy Robot - Episode 2</h2>
+            <p>Welcome to the official project page! In this build, we upgraded the brain to an ESP32, added a joystick, built a PIR sensor sleep mode, and hid a fully playable Snake Game inside the OLED display.</p>
+            
+            <div class="video-container">
+                <iframe width="315" height="560" src="https://www.youtube.com/embed/YOUR_SHORTS_ID_HERE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Circuit & Pin Connections</h2>
+            <p>Follow this exact wiring guide to connect the components to your ESP32 Development Board.</p>
+            <table>
+                <tr><th>Component</th><th>Component Pin</th><th>ESP32 Pin</th></tr>
+                <tr><td><strong>OLED Display (I2C)</strong></td><td>SDA / SCL</td><td>GPIO 21 / GPIO 22</td></tr>
+                <tr><td><strong>MPU6050 Gyroscope</strong></td><td>SDA / SCL</td><td>GPIO 21 / GPIO 22</td></tr>
+                <tr><td><strong>Analog Joystick</strong></td><td>VRx / VRy / SW</td><td>GPIO 32 / GPIO 33 / GPIO 15</td></tr>
+                <tr><td><strong>PIR Motion Sensor</strong></td><td>OUT (Data)</td><td>GPIO 13</td></tr>
+                <tr><td><strong>Passive Buzzer</strong></td><td>Positive (+)</td><td>GPIO 4</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Master Source Code</h2>
+            <p>Upload this directly to your ESP32. Make sure you have installed the Adafruit GFX, Adafruit SSD1306, and MPU6050 libraries.</p>
+            
+            <div class="code-header">
+                <span>DeskBuddy_Ep2_Master.ino</span>
+                <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+            </div>
+            
+            <pre><code class="language-cpp" id="arduinoCode">#include &lt;Wire.h&gt;
+#include &lt;Adafruit_GFX.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+#include &lt;MPU6050.h&gt;
+#include &lt;WiFi.h&gt;          
+#include &lt;HTTPClient.h&gt;    
+#include &lt;ArduinoJson.h&gt;
+#include &lt;time.h&gt;
+
+// --- USER CONFIGURATION ---
+const char* ssid = "AKMADTHARIK";         
+const char* password = "akmad1234"; 
+const char* weatherKey = "b820559e7f1b40ee1d047e7ffa2d4a65"; 
+const char* city = "Salem,IN"; 
+
+// --- ESP32 PINS ---
+#define BUTTON_PIN 15  
+#define BUZZER_PIN 4
+#define PIR_PIN 13
+#define JOY_X 32       
+#define JOY_Y 33       
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &amp;Wire, -1);
+MPU6050 mpu;
+
+// --- STATE MACHINE ---
+enum ScreenState { FACE_DEFAULT, FACE_TRACKING, FACE_HAPPY, FACE_ERROR, PAGE_TIME, PAGE_WEATHER_TODAY, PAGE_WEATHER_TOMORROW, PAGE_GAME };
+ScreenState currentState = FACE_TRACKING; 
+
+// --- VARIABLES ---
+int16_t ax, ay, az;
+float sensitivity = 0.0035;
+float smoothX = 0, smoothY = 0;
+
+bool joyMoved = false;
+bool btnHandled = false;
+
+String currentTemp = "--";
+unsigned long lastWeatherUpdate = 0;
+
+unsigned long lastMotionTime = 0;
+const unsigned long sleepDelay = 30000; // 30 SECONDS SLEEP TIMER
+bool isAsleep = false;
+unsigned long lastBlink = 0;
+bool isBlinking = false;
+
+// --- SNAKE GAME VARIABLES ---
+int snakeX[20], snakeY[20];
+int snakeLen = 3;
+int snakeDir = 1;       // 0:Up, 1:Right, 2:Down, 3:Left
+int currentMoveDir = 1; 
+int foodX, foodY;
+bool gameOver = false;
+bool gameStarted = false; 
+unsigned long lastSnakeMove = 0;
+
+// --- FORWARD DECLARATIONS ---
+void playTransition(); void fetchWeather(); void drawBootScreen(); void drawCustomIntro(); 
+void drawDefaultFace(); void drawTrackingFace(); void drawHappyFace(); void drawErrorFace(); 
+void drawTimeDate(); void drawWeatherToday(); void drawWeatherTomorrow(); void drawSnakeGame(); void resetGame();
+
+// --- SOUND EFFECTS ---
+void beepClick() { tone(BUZZER_PIN, 1500, 50); }
+void beepStartup() { tone(BUZZER_PIN, 800, 100); delay(100); tone(BUZZER_PIN, 1200, 100); delay(100); tone(BUZZER_PIN, 1800, 200); }
+void beepHappy() { tone(BUZZER_PIN, 2000, 100); delay(100); tone(BUZZER_PIN, 2500, 150); }
+void beepSad() { tone(BUZZER_PIN, 400, 200); delay(200); tone(BUZZER_PIN, 300, 400); }
+void beepEat() { tone(BUZZER_PIN, 3000, 30); }
+
+// --- SETUP ---
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22); 
+  
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(PIR_PIN, INPUT);
+  analogReadResolution(10); // 10-bit joystick fix
+
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.setTextColor(WHITE);
+  
+  drawBootScreen();
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) { delay(500); }
+  configTime(19800, 0, "pool.ntp.org", "time.nist.gov"); 
+  fetchWeather(); 
+
+  mpu.initialize();
+  resetGame(); 
+  drawCustomIntro();
+  lastMotionTime = millis(); 
+}
+
+// --- MAIN LOOP ---
+void loop() {
+  checkMotion();
+
+  if (!isAsleep) {
+    handleButton(); 
+    switch (currentState) {
+      case FACE_DEFAULT:          drawDefaultFace(); break;
+      case FACE_TRACKING:         drawTrackingFace(); break;
+      case FACE_HAPPY:            drawHappyFace(); break;
+      case FACE_ERROR:            drawErrorFace(); break;
+      case PAGE_TIME:             drawTimeDate(); break;
+      case PAGE_WEATHER_TODAY:    drawWeatherToday(); break;
+      case PAGE_WEATHER_TOMORROW: drawWeatherTomorrow(); break;
+      case PAGE_GAME:             drawSnakeGame(); break; 
+    }
+  }
+  delay(10); 
+}
+
+// --- SMOOTH TRANSITION ANIMATION ---
+void playTransition() {
+  for (int i = 0; i &lt; 32; i += 4) {
+    display.clearDisplay();
+    display.fillRect(0, i, 128, 64 - (i * 2), WHITE);
+    display.display();
+    delay(15); 
+  }
+  display.clearDisplay(); display.display();
+}
+
+// --- 30 SECOND SLEEP &amp; WAKE LOGIC ---
+void checkMotion() {
+  int pirState = digitalRead(PIR_PIN);
+  if (pirState == HIGH) {
+    lastMotionTime = millis(); 
+    if (isAsleep) {
+      isAsleep = false;
+      display.ssd1306_command(SSD1306_DISPLAYON); 
+      delay(100); 
+      beepHappy();
+      drawHappyFace(); // Wakes up with a big smile!
+      delay(2000); 
+    }
+  }
+
+  if (!isAsleep &amp;&amp; (millis() - lastMotionTime &gt; sleepDelay)) {
+    isAsleep = true;
+    beepSad();
+    display.clearDisplay(); display.display();
+    display.ssd1306_command(SSD1306_DISPLAYOFF); 
+  }
+}
+
+// --- JOYSTICK LOGIC ---
+void handleButton() {
+  int xVal = analogRead(JOY_X); 
+  int yVal = analogRead(JOY_Y); 
+  bool btnPressed = (digitalRead(BUTTON_PIN) == LOW); 
+
+  if (currentState == PAGE_GAME) {
+    if (btnPressed &amp;&amp; !btnHandled) {
+      btnHandled = true;
+      if (gameOver) { resetGame(); beepClick(); } 
+      else { currentState = PAGE_TIME; playTransition(); }
+    } else if (!btnPressed) { btnHandled = false; }
+    return; 
+  }
+
+  // Smooth Menu Scrolling (Y-Axis)
+  if (yVal &lt; 200 &amp;&amp; !joyMoved) {
+    beepClick(); playTransition(); currentState = static_cast&lt;ScreenState&gt;((currentState + 1) % 8); joyMoved = true; 
+    if (currentState == FACE_ERROR) beepSad(); if (currentState == FACE_HAPPY) beepHappy();
+  } 
+  else if (yVal &gt; 800 &amp;&amp; !joyMoved) {
+    beepClick(); playTransition(); currentState = static_cast&lt;ScreenState&gt;((currentState + 7) % 8); joyMoved = true;
+    if (currentState == FACE_ERROR) beepSad(); if (currentState == FACE_HAPPY) beepHappy();
+  } 
+  else if (yVal &gt;= 200 &amp;&amp; yVal &lt;= 800 &amp;&amp; xVal &gt;= 200 &amp;&amp; xVal &lt;= 800) { joyMoved = false; }
+
+  // Petting (Click Joystick for Big Happy Face)
+  if (btnPressed &amp;&amp; !btnHandled) {
+    currentState = FACE_HAPPY; beepHappy(); btnHandled = true;
+  } else if (!btnPressed) { btnHandled = false; }
+}
+
+// --- BULLETPROOF SNAKE GAME ---
+void resetGame() {
+  snakeLen = 3; snakeDir = 1; currentMoveDir = 1; 
+  snakeX[0] = 16; snakeY[0] = 8; snakeX[1] = 15; snakeY[1] = 8; snakeX[2] = 14; snakeY[2] = 8;
+  foodX = random(2, 29); foodY = random(2, 13);
+  gameOver = false; gameStarted = false; lastSnakeMove = millis(); 
+}
+
+void drawSnakeGame() {
+  display.clearDisplay();
+
+  if (gameOver) {
+    display.setTextSize(2); display.setCursor(10, 15); display.print("GAME OVER");
+    display.setTextSize(1); display.setCursor(15, 45); display.print("Click to Restart");
+    display.display();
+    return;
+  }
+
+  int xVal = analogRead(JOY_X); int yVal = analogRead(JOY_Y);
+  int dx = abs(xVal - 511); int dy = abs(yVal - 511);
+
+  if (dx &gt; 350 || dy &gt; 350) {
+    gameStarted = true;
+    if (dx &gt; dy) { 
+      if (xVal &lt; 150 &amp;&amp; currentMoveDir != 2) snakeDir = 0;       // Up
+      else if (xVal &gt; 850 &amp;&amp; currentMoveDir != 0) snakeDir = 2;  // Down 
+    } else { 
+      if (yVal &gt; 850 &amp;&amp; currentMoveDir != 1) snakeDir = 3;       // Left
+      else if (yVal &lt; 150 &amp;&amp; currentMoveDir != 3) snakeDir = 1;  // Right
+    }
+  }
+
+  if (!gameStarted) { display.setTextSize(1); display.setCursor(25, 30); display.print("Move to Start"); }
+
+  if (gameStarted &amp;&amp; (millis() - lastSnakeMove &gt; 150)) {
+    lastSnakeMove = millis();
+    currentMoveDir = snakeDir; 
+
+    for (int i = snakeLen - 1; i &gt; 0; i--) { snakeX[i] = snakeX[i - 1]; snakeY[i] = snakeY[i - 1]; }
+    
+    if (snakeDir == 0) snakeY[0]--; else if (snakeDir == 1) snakeX[0]++;
+    else if (snakeDir == 2) snakeY[0]++; else if (snakeDir == 3) snakeX[0]--;
+
+    if (snakeX[0] &lt; 0 || snakeX[0] &gt;= 32 || snakeY[0] &lt; 0 || snakeY[0] &gt;= 16) { gameOver = true; beepSad(); }
+    for (int i = 1; i &lt; snakeLen; i++) { if (snakeX[0] == snakeX[i] &amp;&amp; snakeY[0] == snakeY[i]) { gameOver = true; beepSad(); } }
+
+    if (snakeX[0] == foodX &amp;&amp; snakeY[0] == foodY) {
+      if (snakeLen &lt; 20) snakeLen++; foodX = random(2, 29); foodY = random(2, 13); beepEat();
+    }
+  }
+
+  display.fillRect(foodX * 4, foodY * 4, 4, 4, WHITE);
+  for (int i = 0; i &lt; snakeLen; i++) { display.fillRect(snakeX[i] * 4, snakeY[i] * 4, 4, 4, WHITE); }
+  display.drawRect(0, 0, 128, 64, WHITE); display.display();
+}
+
+// --- CUTER EMO FACES &amp; SCREENS ---
+void drawBootScreen() { display.clearDisplay(); display.setTextSize(1); display.setCursor(25, 20); display.print("CONNECTING"); display.setCursor(25, 35); display.setTextSize(2); display.print("WiFi..."); display.display(); }
+void drawCustomIntro() { display.clearDisplay(); display.setTextSize(2); display.setCursor(28, 15); display.print("THARIK"); display.setTextSize(1); display.setCursor(34, 38); display.print("TECHTRONIX"); display.display(); beepStartup(); delay(2000); playTransition(); }
+
+void drawDefaultFace() {
+  display.clearDisplay();
+  if (millis() - lastBlink &gt; random(3000, 6000)) { isBlinking = true; lastBlink = millis(); }
+  if (isBlinking &amp;&amp; millis() - lastBlink &gt; 150) { isBlinking = false; }
+  
+  if (isBlinking) { display.fillRoundRect(22, 28, 36, 6, 4, WHITE); display.fillRoundRect(70, 28, 36, 6, 4, WHITE); } 
+  else {
+    display.fillRoundRect(20, 12, 40, 40, 12, WHITE); display.fillRoundRect(68, 12, 40, 40, 12, WHITE);
+    display.fillRoundRect(34, 24, 12, 12, 4, BLACK); display.fillRoundRect(82, 24, 12, 12, 4, BLACK);
+  }
+  display.display();
+}
+
+void drawTrackingFace() {
+  mpu.getAcceleration(&amp;ax, &amp;ay, &amp;az);
+  smoothX = smoothX * 0.3 + (ay * sensitivity) * 0.7; smoothY = smoothY * 0.3 + (ax * sensitivity) * 0.7;
+  display.clearDisplay();
+  display.fillRoundRect(20, 12, 40, 40, 12, WHITE); display.fillRoundRect(68, 12, 40, 40, 12, WHITE);
+  int ox = constrain((int)smoothX, -10, 10); int oy = constrain((int)smoothY, -10, 10);
+  display.fillRoundRect(34 + ox, 24 + oy, 12, 12, 4, BLACK); display.fillRoundRect(82 + ox, 24 + oy, 12, 12, 4, BLACK);
+  display.display();
+}
+
+void drawHappyFace() {
+  display.clearDisplay();
+  display.fillRoundRect(20, 12, 40, 40, 12, WHITE); display.fillRoundRect(68, 12, 40, 40, 12, WHITE);
+  display.fillRect(18, 28, 92, 24, BLACK); 
+  display.fillCircle(64, 44, 14, WHITE); display.fillCircle(64, 38, 16, BLACK); 
+  display.display();
+}
+
+void drawErrorFace() { display.clearDisplay(); display.fillRoundRect(22, 16, 36, 32, 8, WHITE); display.fillRoundRect(70, 16, 36, 32, 8, WHITE); display.fillTriangle(15, 10, 65, 10, 65, 30, BLACK); display.fillTriangle(63, 10, 113, 10, 63, 30, BLACK); display.fillRoundRect(38, 30, 12, 12, 3, BLACK); display.fillRoundRect(78, 30, 12, 12, 3, BLACK); display.fillRoundRect(56, 52, 16, 4, 2, WHITE); display.display(); }
+void drawTimeDate() { display.clearDisplay(); time_t now = time(nullptr); struct tm* p = localtime(&amp;now); char tBuf[10], dBuf[20]; strftime(tBuf, sizeof(tBuf), "%H:%M", p); strftime(dBuf, sizeof(dBuf), "%d %b %Y", p); display.setTextSize(3); display.setCursor(20, 10); display.print(tBuf); display.setTextSize(1); display.setCursor(30, 45); display.print(dBuf); display.display(); }
+void drawWeatherToday() { if (millis() - lastWeatherUpdate &gt; 600000) fetchWeather(); display.clearDisplay(); display.drawCircle(25, 32, 10, WHITE); display.drawLine(25, 15, 25, 20, WHITE); display.drawLine(25, 44, 25, 49, WHITE); display.drawLine(8, 32, 13, 32, WHITE); display.drawLine(37, 32, 42, 32, WHITE); display.drawLine(13, 20, 16, 23, WHITE); display.drawLine(34, 41, 37, 44, WHITE); display.drawLine(13, 44, 16, 41, WHITE); display.drawLine(34, 23, 37, 20, WHITE); display.setTextSize(2); display.setCursor(60, 20); display.print(currentTemp); display.setTextSize(1); display.setCursor(60, 45); display.print("SALEM | NOW"); display.display(); }
+void drawWeatherTomorrow() { display.clearDisplay(); display.drawCircle(20, 25, 6, WHITE); display.drawLine(20, 15, 20, 17, WHITE); display.fillCircle(25, 40, 8, WHITE); display.fillCircle(35, 35, 10, WHITE); display.fillCircle(45, 40, 8, WHITE); display.fillRect(25, 40, 20, 8, WHITE); display.setTextSize(1); display.setCursor(60, 20); display.print("28C - 33C"); display.setCursor(60, 45); display.print("SALEM | FCST"); display.display(); }
+
+void fetchWeather() { if (WiFi.status() == WL_CONNECTED) { HTTPClient http; http.begin("http://api.openweathermap.org/data/2.5/weather?q=" + String(city) + "&amp;units=metric&amp;appid=" + String(weatherKey)); if (http.GET() &gt; 0) { DynamicJsonDocument doc(1024); deserializeJson(doc, http.getString()); currentTemp = String((int)doc["main"]["temp"]) + "C"; lastWeatherUpdate = millis(); } http.end(); } }</code></pre>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
+    <script>
+        function copyCode() {
+            // Function to copy text directly to clipboard
+            const codeText = document.getElementById("arduinoCode").innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                const btn = document.querySelector(".copy-btn");
+                btn.innerText = "Copied!";
+                btn.style.backgroundColor = "#4CAF50"; 
+                setTimeout(() => {
+                    btn.innerText = "Copy Code";
+                    btn.style.backgroundColor = "var(--accent-color)";
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>
