@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tharik Techtronix</title>
+</head>
+
+<body>
+
+<h1>Tharik Techtronix</h1>
+<p>Electronics Projects and Circuits</p>
+
+<h2>Projects</h2>
+
+<ul>
+<li>ESP32 Desk Robot</li>
+<li>ESP8266 Health Monitor</li>
+<li>Women Safety System</li>
+</ul>
+
+</body>
+</html>
